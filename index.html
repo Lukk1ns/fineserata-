@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -283,6 +280,10 @@
             font-size: 0.9em;
         }
 
+        .edit-btn {
+            background: linear-gradient(45deg, #3a86ff, #1982fc);
+        }
+
         @media (max-width: 768px) {
             h1 {
                 font-size: 2em;
@@ -309,7 +310,7 @@
 
         <div class="tabs">
             <div class="tab active" onclick="switchTab('incasso')">💰 Incasso Serata</div>
-            <div class="tab" onclick="switchTab('costi')">📊 Calcolo Costi</div>
+            <div class="tab" onclick="switchTab('costi')">📊 Costi Personale e Artistico</div>
             <div class="tab" onclick="switchTab('riepilogo')">📈 Riepilogo Totale</div>
             <div class="tab" onclick="switchTab('archivio')">📁 Archivio Serate</div>
         </div>
@@ -340,13 +341,16 @@
 
             <div class="grid-2">
                 <div class="card">
-                    <h3 style="color: #3a86ff; margin-bottom: 20px;">💸 Spese della Serata</h3>
+                    <h3 style="color: #3a86ff; margin-bottom: 20px;">💸 Spese Pagate dalla Cassa</h3>
+                    <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">
+                        (Queste spese sono state pagate con i soldi dell'incasso)
+                    </p>
                     <div id="speseContainer">
                         <!-- Le spese verranno aggiunte qui dinamicamente -->
                     </div>
                     <button class="add-expense-btn" onclick="aggiungiSpesa()">➕ Aggiungi Spesa</button>
                     <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #2a2a3e;">
-                        <h4 style="color: #ff006e;">Totale Spese: €<span id="totaleSpese">0</span></h4>
+                        <h4 style="color: #ff006e;">Totale Spese dalla Cassa: €<span id="totaleSpese">0</span></h4>
                     </div>
                 </div>
 
@@ -361,7 +365,10 @@
                         <input type="number" id="incassoContanti" placeholder="0" onchange="calcolaIncassoTotale()">
                     </div>
                     <div class="result-box" style="background: linear-gradient(135deg, #3a86ff, #8338ec);">
-                        Incasso Totale: €<span id="incassoTotale">0</span>
+                        Incasso Totale Lordo: €<span id="incassoTotale">0</span>
+                        <p style="font-size: 0.6em; margin-top: 10px;">
+                            (POS + Contanti + Spese dalla Cassa)
+                        </p>
                     </div>
                     <div class="chart-container">
                         <canvas id="pieChart"></canvas>
@@ -376,10 +383,10 @@
             </div>
         </div>
 
-        <!-- Sezione 2: Calcolo Costi -->
+        <!-- Sezione 2: Costi Personale e Artistico -->
         <div id="costi" class="section">
             <div class="card">
-                <h2 style="color: #ff006e; margin-bottom: 20px;">👥 Personale e Costi</h2>
+                <h2 style="color: #ff006e; margin-bottom: 20px;">👥 Costi Personale e Artistico</h2>
                 
                 <div class="stats-grid">
                     <div class="form-group">
@@ -423,7 +430,7 @@
                         <input type="number" id="speseExtra" value="0" placeholder="Inserisci eventuali spese extra" onchange="calcolaCostiTotali()">
                     </div>
                     <div class="form-group">
-                        <label>% Materia Prima (su incasso):</label>
+                        <label>% Materia Prima (su incasso lordo):</label>
                         <input type="number" id="percentualeMateria" value="20" min="0" max="100" onchange="calcolaCostiTotali()">
                     </div>
                 </div>
@@ -530,6 +537,7 @@
         let spese = [];
         let pieChart = null;
         let barChart = null;
+        let editingId = null;
 
         // Inizializzazione
         document.addEventListener('DOMContentLoaded', function() {
@@ -602,7 +610,8 @@
             const contanti = parseFloat(document.getElementById('incassoContanti').value) || 0;
             const spese = parseFloat(document.getElementById('totaleSpese').textContent) || 0;
             
-            const incassoTotale = pos + contanti - spese;
+            // L'incasso totale è la somma di tutto (le spese sono state pagate con questi soldi)
+            const incassoTotale = pos + contanti + spese;
             document.getElementById('incassoTotale').textContent = incassoTotale.toFixed(2);
             
             // Aggiorna il grafico a torta
@@ -616,7 +625,7 @@
             pieChart = new Chart(ctxPie, {
                 type: 'doughnut',
                 data: {
-                    labels: ['POS', 'Contanti', 'Spese'],
+                    labels: ['POS', 'Contanti', 'Spese dalla Cassa'],
                     datasets: [{
                         data: [0, 0, 0],
                         backgroundColor: [
@@ -668,7 +677,7 @@
             
             const costiFissi = 4050;
             
-            // Calcola materia prima basata sull'incasso
+            // Calcola materia prima basata sull'incasso lordo
             const incassoTotale = parseFloat(document.getElementById('incassoTotale').textContent) || 0;
             const percentualeMateria = parseFloat(document.getElementById('percentualeMateria').value) || 20;
             const costoMateria = (incassoTotale * percentualeMateria) / 100;
@@ -760,10 +769,22 @@
             serataCorrente.costiTotali = parseFloat(document.getElementById('costiTotali').textContent) || 0;
             
             serataCorrente.risultato = serataCorrente.incassoTotale - serataCorrente.costiTotali;
-            serataCorrente.id = Date.now();
+            
+            if (editingId) {
+                // Se stiamo modificando, trova e aggiorna la serata esistente
+                const index = serate.findIndex(s => s.id === editingId);
+                if (index !== -1) {
+                    serataCorrente.id = editingId;
+                    serate[index] = serataCorrente;
+                }
+                editingId = null;
+            } else {
+                // Altrimenti crea una nuova serata
+                serataCorrente.id = Date.now();
+                serate.push(serataCorrente);
+            }
             
             // Salva nel localStorage
-            serate.push(serataCorrente);
             localStorage.setItem('serate', JSON.stringify(serate));
             
             alert('✅ Serata salvata con successo!');
@@ -806,6 +827,53 @@
             
             serataCorrente = {};
             spese = [];
+            editingId = null;
+        }
+
+        function modificaSerata(id) {
+            const serata = serate.find(s => s.id === id);
+            if (!serata) return;
+            
+            editingId = id;
+            serataCorrente = {...serata};
+            
+            // Compila i dati della prima sezione
+            document.getElementById('data').value = serata.data;
+            document.getElementById('tipoSerata').value = serata.tipoSerata;
+            document.getElementById('nomeSerata').value = serata.nomeSerata;
+            document.getElementById('incassoPos').value = serata.incassoPos;
+            document.getElementById('incassoContanti').value = serata.incassoContanti;
+            
+            // Ricostruisci le spese
+            document.getElementById('speseContainer').innerHTML = '';
+            serata.spese.forEach(spesa => {
+                aggiungiSpesa();
+                const speseElements = document.querySelectorAll('[id^="spesa-"]');
+                const lastElement = speseElements[speseElements.length - 1];
+                const id = lastElement.id.split('-')[1];
+                document.getElementById(`voce-${id}`).value = spesa.voce;
+                document.getElementById(`importo-${id}`).value = spesa.importo;
+            });
+            
+            calcolaTotaleSpese();
+            
+            // Compila i dati della seconda sezione
+            document.getElementById('baristi').value = serata.baristi || 0;
+            document.getElementById('camerieri').value = serata.camerieri || 0;
+            document.getElementById('sicurezza').value = serata.sicurezza || 0;
+            document.getElementById('paninaro').value = serata.paninaro || 0;
+            document.getElementById('cassa').value = serata.cassa || 0;
+            document.getElementById('fotografo').value = serata.fotografo || 0;
+            document.getElementById('artistico').value = serata.artistico || 0;
+            document.getElementById('ambulanza').value = serata.ambulanza || 0;
+            document.getElementById('speseExtra').value = serata.speseExtra || 0;
+            document.getElementById('percentualeMateria').value = serata.percentualeMateria || 20;
+            
+            // Vai alla prima sezione
+            switchTab('incasso');
+            document.querySelector('.tab:nth-child(1)').classList.add('active');
+            
+            alert('📝 Modalità modifica attivata. Apporta le modifiche e salva nuovamente.');
         }
 
         function aggiornaRiepilogo() {
@@ -952,6 +1020,7 @@
                                 </div>
                             </div>
                             <div>
+                                <button onclick="modificaSerata(${serata.id})" class="edit-btn" style="margin: 5px;">✏️ Modifica</button>
                                 <button onclick="esportaPDF(${serata.id})" style="margin: 5px;">📄 PDF</button>
                                 <button onclick="eliminaSerata(${serata.id})" class="remove-btn" style="margin: 5px;">🗑️ Elimina</button>
                             </div>
@@ -992,10 +1061,10 @@
 📊 INCASSI:
 • POS: €${serata.incassoPos.toFixed(2)}
 • Contanti: €${serata.incassoContanti.toFixed(2)}
-• Totale Spese Serata: €${serata.totaleSpese.toFixed(2)}
-• INCASSO NETTO: €${serata.incassoTotale.toFixed(2)}
+• Spese pagate dalla cassa: €${serata.totaleSpese.toFixed(2)}
+• INCASSO TOTALE LORDO: €${serata.incassoTotale.toFixed(2)}
 
-💸 SPESE SERATA:
+💸 DETTAGLIO SPESE DALLA CASSA:
 ${dettagliSpese}
 
 👥 PERSONALE:
@@ -1005,7 +1074,7 @@ ${dettagliSpese}
 • Altri: €${(serata.paninaro * 100 + serata.cassa * 100 + serata.fotografo * 180 + serata.artistico + serata.ambulanza * 200).toFixed(2)}
 
 💰 COSTI TOTALI:
-• Personale: €${serata.costiPersonale.toFixed(2)}
+• Personale e Artistico: €${serata.costiPersonale.toFixed(2)}
 • Costi Fissi: €4,050.00
 • Materia Prima (${serata.percentualeMateria}%): €${serata.costoMateria.toFixed(2)}
 • TOTALE COSTI: €${serata.costiTotali.toFixed(2)}
@@ -1040,11 +1109,11 @@ Tipo: ${capitalizeFirst(serata.tipoSerata)}
 INCASSI:
 - POS: €${serata.incassoPos.toFixed(2)}
 - Contanti: €${serata.incassoContanti.toFixed(2)}
-- Totale Spese: €${serata.totaleSpese.toFixed(2)}
-- INCASSO NETTO: €${serata.incassoTotale.toFixed(2)}
+- Spese dalla cassa: €${serata.totaleSpese.toFixed(2)}
+- INCASSO TOTALE LORDO: €${serata.incassoTotale.toFixed(2)}
 
 COSTI:
-- Personale: €${serata.costiPersonale.toFixed(2)}
+- Personale e Artistico: €${serata.costiPersonale.toFixed(2)}
 - Costi Fissi: €4,050.00
 - Materia Prima: €${serata.costoMateria.toFixed(2)}
 - TOTALE COSTI: €${serata.costiTotali.toFixed(2)}
