@@ -253,7 +253,6 @@
             gap: 20px;
         }
 
-        /* Nuovo stile per divisione costi */
         .costi-split {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -278,27 +277,6 @@
             color: #ff006e;
             margin-bottom: 20px;
             text-align: center;
-        }
-
-        .costo-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding: 10px;
-            background: #050505;
-            border-radius: 8px;
-            border: 1px solid #1a1a1a;
-        }
-
-        .costo-label {
-            font-weight: bold;
-            color: #8338ec;
-        }
-
-        .costo-value {
-            color: #ffffff;
-            font-weight: bold;
         }
 
         .totale-costi {
@@ -572,7 +550,7 @@
                     </div>
                     <div class="stat-card">
                         <p style="color: #8338ec;">Costi Fissi Locale</p>
-                        <div class="stat-value">€4.050</div>
+                        <div class="stat-value">€3.500</div>
                     </div>
                     <div class="stat-card">
                         <p style="color: #8338ec;">Costo Materia Prima</p>
@@ -761,668 +739,853 @@
         // Inizializzazione
         document.addEventListener('DOMContentLoaded', function() {
             caricaDati();
-            aggiornaRiepilogo();
-            aggiornaArchivio();
-            initCharts();
-        });
+initCharts();
+           aggiornaRiepilogo();
+           aggiornaArchivio();
+       });
 
-        // Funzione per determinare il tipo di serata in base al giorno
-        function aggiornaTipoSerata() {
-            const dataInput = document.getElementById('data');
-            const dayIndicator = document.getElementById('dayIndicator');
-            
-            if (dataInput.value) {
-                const data = new Date(dataInput.value + 'T00:00:00');
-                const giorno = data.getDay(); // 0 = Domenica, 1 = Lunedì, ..., 6 = Sabato
-                
-                let tipoSerata = '';
-                let className = '';
-                
-                if (giorno === 6) { // Sabato
-                    tipoSerata = 'Sabato';
-                    className = 'day-sabato';
-                } else if (giorno === 5) { // Venerdì  
-                    tipoSerata = 'Venerdì';
-                    className = 'day-venerdi';
-                } else {
-                    tipoSerata = 'Serata Extra';
-                    className = 'day-extra';
-                }
-                
-                dayIndicator.innerHTML = `<span class="day-indicator ${className}">${tipoSerata}</span>`;
-                serataCorrente.tipo = tipoSerata.toLowerCase().replace(' ', '');
-            }
-        }
+       // Funzione per determinare il tipo di serata in base al giorno
+       function aggiornaTipoSerata() {
+           const dataInput = document.getElementById('data');
+           const dayIndicator = document.getElementById('dayIndicator');
+           
+           if (dataInput.value) {
+               const data = new Date(dataInput.value + 'T00:00:00');
+               const giorno = data.getDay(); // 0 = Domenica, 1 = Lunedì, ..., 6 = Sabato
+               
+               let tipoSerata = '';
+               let className = '';
+               
+               if (giorno === 6) { // Sabato
+                   tipoSerata = 'Sabato';
+                   className = 'day-sabato';
+               } else if (giorno === 5) { // Venerdì  
+                   tipoSerata = 'Venerdì';
+                   className = 'day-venerdi';
+               } else {
+                   tipoSerata = 'Serata Extra';
+                   className = 'day-extra';
+               }
+               
+               dayIndicator.innerHTML = `<span class="day-indicator ${className}">${tipoSerata}</span>`;
+               serataCorrente.tipo = tipoSerata.toLowerCase().replace(' ', '');
+           }
+       }
 
-        // Cambio tab
-        function switchTab(tabName) {
-            // Nascondi tutte le sezioni
-            document.querySelectorAll('.section').forEach(section => {
-                section.classList.remove('active');
-            });
-            
-            // Rimuovi active da tutti i tab
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Attiva la sezione selezionata
-            document.getElementById(tabName).classList.add('active');
-            
-            // Attiva il tab selezionato
-            event.target.classList.add('active');
-            
-            // Aggiorna i dati se necessario
-            if (tabName === 'riepilogo') {
-                aggiornaRiepilogo();
-            } else if (tabName === 'archivio') {
-                aggiornaArchivio();
-            }
-        }
+       // Cambio tab
+       function switchTab(tabName) {
+           // Nascondi tutte le sezioni
+           document.querySelectorAll('.section').forEach(section => {
+               section.classList.remove('active');
+           });
+           
+           // Rimuovi active da tutti i tab
+           document.querySelectorAll('.tab').forEach(tab => {
+               tab.classList.remove('active');
+           });
+           
+           // Attiva la sezione selezionata
+           document.getElementById(tabName).classList.add('active');
+           
+           // Attiva il tab selezionato
+           event.target.classList.add('active');
+           
+           // Aggiorna i dati se necessario
+           if (tabName === 'riepilogo') {
+               aggiornaRiepilogo();
+           } else if (tabName === 'archivio') {
+               aggiornaArchivio();
+           }
+       }
 
-        // Gestione spese
-        function aggiungiSpesa() {
-            const container = document.getElementById('speseContainer');
-            const spesaId = Date.now();
-            
-            const spesaHtml = `
-                <div class="expense-item" id="spesa-${spesaId}">
-                    <input type="text" placeholder="Voce spesa" id="voce-${spesaId}" style="width: 45%; margin-right: 10px;">
-                    <input type="number" placeholder="Importo" id="importo-${spesaId}" style="width: 35%; margin-right: 10px;" onchange="calcolaTotaleSpese()">
-                    <button class="remove-btn" onclick="rimuoviSpesa(${spesaId})">❌</button>
-                </div>
-            `;
-            
-            container.insertAdjacentHTML('beforeend', spesaHtml);
-        }
+       // Gestione spese
+       function aggiungiSpesa() {
+           const container = document.getElementById('speseContainer');
+           const spesaId = Date.now();
+           
+           const spesaHtml = `
+               <div class="expense-item" id="spesa-${spesaId}">
+                   <input type="text" placeholder="Voce spesa" id="voce-${spesaId}" style="width: 45%; margin-right: 10px;">
+                   <input type="number" placeholder="Importo" id="importo-${spesaId}" style="width: 35%; margin-right: 10px;" onchange="calcolaTotaleSpese()">
+                   <button class="remove-btn" onclick="rimuoviSpesa(${spesaId})">❌</button>
+               </div>
+           `;
+           
+           container.insertAdjacentHTML('beforeend', spesaHtml);
+       }
 
-        function rimuoviSpesa(spesaId) {
-            document.getElementById(`spesa-${spesaId}`).remove();
-            calcolaTotaleSpese();
-        }
+       function rimuoviSpesa(spesaId) {
+           document.getElementById(`spesa-${spesaId}`).remove();
+           calcolaTotaleSpese();
+       }
 
-        function calcolaTotaleSpese() {
-            let totale = 0;
-            const speseElements = document.querySelectorAll('[id^="importo-"]');
-            
-            speseElements.forEach(element => {
-                totale += parseFloat(element.value) || 0;
-            });
-            
-            document.getElementById('totaleSpese').textContent = totale.toFixed(2);
-            calcolaIncassoTotale();
-        }
+       function calcolaTotaleSpese() {
+           let totale = 0;
+           const speseElements = document.querySelectorAll('[id^="importo-"]');
+           
+           speseElements.forEach(element => {
+               totale += parseFloat(element.value) || 0;
+           });
+           
+           document.getElementById('totaleSpese').textContent = totale.toFixed(2);
+           calcolaIncassoTotale();
+       }
 
-        function calcolaIncassoTotale() {
-            const pos = parseFloat(document.getElementById('incassoPos').value) || 0;
-            const contanti = parseFloat(document.getElementById('incassoContanti').value) || 0;
-            const spese = parseFloat(document.getElementById('totaleSpese').textContent) || 0;
-            
-            // L'incasso totale è la somma di tutto (le spese sono state pagate con questi soldi)
-            const incassoTotale = pos + contanti + spese;
-            document.getElementById('incassoTotale').textContent = incassoTotale.toFixed(2);
-            
-            // Salva nei dati della serata
-            serataCorrente.incassoPos = pos;
-            serataCorrente.incassoContanti = contanti;
-            serataCorrente.speseCassa = spese;
-            serataCorrente.incassoTotale = incassoTotale;
-            
-            // Aggiorna il grafico a torta
-            updatePieChart(pos, contanti, spese);
-        }
+       function calcolaIncassoTotale() {
+           const pos = parseFloat(document.getElementById('incassoPos').value) || 0;
+           const contanti = parseFloat(document.getElementById('incassoContanti').value) || 0;
+           const spese = parseFloat(document.getElementById('totaleSpese').textContent) || 0;
+           
+           // L'incasso totale è la somma di tutto (le spese sono state pagate con questi soldi)
+           const incassoTotale = pos + contanti + spese;
+           document.getElementById('incassoTotale').textContent = incassoTotale.toFixed(2);
+           
+           // Salva nei dati della serata
+           serataCorrente.incassoPos = pos;
+           serataCorrente.incassoContanti = contanti;
+           serataCorrente.speseCassa = spese;
+           serataCorrente.incassoTotale = incassoTotale;
+           
+           // Aggiorna il grafico a torta
+           updatePieChart(pos, contanti, spese);
+       }
 
-        function calcolaCostiTotali() {
-            // Costi personale
-            const baristi = parseInt(document.getElementById('baristi').value) || 0;
-            const camerieri = parseInt(document.getElementById('camerieri').value) || 0;
-            const sicurezza = parseInt(document.getElementById('sicurezza').value) || 0;
-            const paninaro = parseInt(document.getElementById('paninaro').value) || 0;
-            const parcheggiatore = parseInt(document.getElementById('parcheggiatore').value) || 0;
-            const cassa = parseInt(document.getElementById('cassa').value) || 0;
-            const ambulanza = parseInt(document.getElementById('ambulanza').value) || 0;
-            
-            const costiPersonale = (baristi * 110) + (camerieri * 100) + (sicurezza * 130) + 
-                                 (paninaro * 100) + (parcheggiatore * 100) + (cassa * 100) + (ambulanza * 200);
-            
-            // Costi artistico
-            const dj = parseFloat(document.getElementById('dj').value) || 0;
-            const dj2 = parseFloat(document.getElementById('dj2').value) || 0;
-            const format = parseFloat(document.getElementById('format').value) || 0;
-            const grafiche = parseFloat(document.getElementById('grafiche').value) || 0;
-            const fotografo = parseFloat(document.getElementById('fotografo').value) || 0;
-            const vocalist = parseFloat(document.getElementById('vocalist').value) || 0;
-            
-            const costiArtistico = dj + dj2 + format + grafiche + fotografo + vocalist;
-            
-            // Altri costi
-            const speseExtra = parseFloat(document.getElementById('speseExtra').value) || 0;
-            const percentualeMateria = parseFloat(document.getElementById('percentualeMateria').value) || 20;
-            const incassoTotale = serataCorrente.incassoTotale || 0;
-            const costoMateria = (incassoTotale * percentualeMateria) / 100;
-            
-            const costiFissi = 4050;
-            const costiTotali = costiPersonale + costiArtistico + costiFissi + costoMateria + speseExtra;
-            
-            // Aggiorna i display
-            document.getElementById('totalePersonale').textContent = costiPersonale.toFixed(2);
-            document.getElementById('totaleArtistico').textContent = costiArtistico.toFixed(2);
-            document.getElementById('costiPersonale').textContent = costiPersonale.toFixed(2);
-            document.getElementById('costiArtistico').textContent = costiArtistico.toFixed(2);
-            document.getElementById('costoMateria').textContent = costoMateria.toFixed(2);
-            document.getElementById('costiTotali').textContent = costiTotali.toFixed(2);
-            
-            // Salva nei dati della serata
-            serataCorrente.costiPersonale = costiPersonale;
-            serataCorrente.costiArtistico = costiArtistico;
-            serataCorrente.costiFissi = costiFissi;
-            serataCorrente.costoMateria = costoMateria;
-            serataCorrente.speseExtra = speseExtra;
-            serataCorrente.costiTotali = costiTotali;
-            
-            // Calcola il risultato
-            const risultato = incassoTotale - costiTotali;
-            const risultatoDiv = document.getElementById('risultatoSerata');
-            
-            if (risultato >= 0) {
-                risultatoDiv.innerHTML = `
-                    <div class="result-box profit">
-                        🎉 PROFITTO: €${risultato.toFixed(2)}
-                    </div>
-                `;
-            } else {
-                risultatoDiv.innerHTML = `
-                    <div class="result-box loss">
-                        📉 PERDITA: €${Math.abs(risultato).toFixed(2)}
-                    </div>
-                `;
-            }
-            
-            serataCorrente.risultato = risultato;
-        }
+       function calcolaCostiTotali() {
+           // Costi personale
+           const baristi = parseInt(document.getElementById('baristi').value) || 0;
+           const camerieri = parseInt(document.getElementById('camerieri').value) || 0;
+           const sicurezza = parseInt(document.getElementById('sicurezza').value) || 0;
+           const paninaro = parseInt(document.getElementById('paninaro').value) || 0;
+           const parcheggiatore = parseInt(document.getElementById('parcheggiatore').value) || 0;
+           const cassa = parseInt(document.getElementById('cassa').value) || 0;
+           const ambulanza = parseInt(document.getElementById('ambulanza').value) || 0;
+           
+           const costiPersonale = (baristi * 110) + (camerieri * 100) + (sicurezza * 130) + 
+                                (paninaro * 100) + (parcheggiatore * 100) + (cassa * 100) + (ambulanza * 200);
+           
+           // Costi artistico
+           const dj = parseFloat(document.getElementById('dj').value) || 0;
+           const dj2 = parseFloat(document.getElementById('dj2').value) || 0;
+           const format = parseFloat(document.getElementById('format').value) || 0;
+           const grafiche = parseFloat(document.getElementById('grafiche').value) || 0;
+           const fotografo = parseFloat(document.getElementById('fotografo').value) || 0;
+           const vocalist = parseFloat(document.getElementById('vocalist').value) || 0;
+           
+           const costiArtistico = dj + dj2 + format + grafiche + fotografo + vocalist;
+           
+           // Altri costi
+           const speseExtra = parseFloat(document.getElementById('speseExtra').value) || 0;
+           const percentualeMateria = parseFloat(document.getElementById('percentualeMateria').value) || 20;
+           const incassoTotale = serataCorrente.incassoTotale || 0;
+           const costoMateria = (incassoTotale * percentualeMateria) / 100;
+           
+           const costiFissi = 3500; // Aggiornato a 3500
+           const costiTotali = costiPersonale + costiArtistico + costiFissi + costoMateria + speseExtra;
+           
+           // Aggiorna i display
+           document.getElementById('totalePersonale').textContent = costiPersonale.toFixed(2);
+           document.getElementById('totaleArtistico').textContent = costiArtistico.toFixed(2);
+           document.getElementById('costiPersonale').textContent = costiPersonale.toFixed(2);
+           document.getElementById('costiArtistico').textContent = costiArtistico.toFixed(2);
+           document.getElementById('costoMateria').textContent = costoMateria.toFixed(2);
+           document.getElementById('costiTotali').textContent = costiTotali.toFixed(2);
+           
+           // Salva nei dati della serata
+           serataCorrente.costiPersonale = costiPersonale;
+           serataCorrente.costiArtistico = costiArtistico;
+           serataCorrente.costiFissi = costiFissi;
+           serataCorrente.costoMateria = costoMateria;
+           serataCorrente.speseExtra = speseExtra;
+           serataCorrente.costiTotali = costiTotali;
+           
+           // Calcola il risultato
+           const risultato = incassoTotale - costiTotali;
+           const risultatoDiv = document.getElementById('risultatoSerata');
+           
+           if (risultato >= 0) {
+               risultatoDiv.innerHTML = `
+                   <div class="result-box profit">
+                       🎉 PROFITTO: €${risultato.toFixed(2)}
+                   </div>
+               `;
+           } else {
+               risultatoDiv.innerHTML = `
+                   <div class="result-box loss">
+                       📉 PERDITA: €${Math.abs(risultato).toFixed(2)}
+                   </div>
+               `;
+           }
+           
+           serataCorrente.risultato = risultato;
+       }
 
-        // Salvataggio dati
-        function salvaIncasso() {
-            // Recupera i dati dell'incasso
-            const data = document.getElementById('data').value;
-            const nomeSerata = document.getElementById('nomeSerata').value;
-            
-            if (!data || !nomeSerata) {
-                alert('Compila tutti i campi obbligatori!');
-                return;
-            }
-            
-            // Recupera le spese
-            const speseElements = document.querySelectorAll('[id^="spesa-"]');
-            let speseDettaglio = [];
-            
-            speseElements.forEach(element => {
-                const id = element.id.split('-')[1];
-                const voce = document.getElementById(`voce-${id}`).value;
-                const importo = parseFloat(document.getElementById(`importo-${id}`).value) || 0;
-                
-                if (voce && importo > 0) {
-                    speseDettaglio.push({ voce, importo });
-                }
-            });
-            
-            serataCorrente = {
-                ...serataCorrente,
-                data,
-                nomeSerata,
-                speseDettaglio,
-                id: serataCorrente.id || Date.now()
-            };
-            
-            // Passa alla sezione costi
-            switchTab('costi');
-            document.querySelector('.tab[onclick="switchTab(\'costi\')"]').classList.add('active');
-        }
+       function salvaIncasso() {
+           // Recupera i dati dell'incasso
+           const data = document.getElementById('data').value;
+           const nomeSerata = document.getElementById('nomeSerata').value;
+           
+           if (!data || !nomeSerata) {
+               alert('Compila tutti i campi obbligatori!');
+               return;
+           }
+           
+           // Recupera le spese
+           const speseElements = document.querySelectorAll('[id^="spesa-"]');
+           let speseDettaglio = [];
+           
+           speseElements.forEach(element => {
+               const id = element.id.split('-')[1];
+               const voce = document.getElementById(`voce-${id}`).value;
+               const importo = parseFloat(document.getElementById(`importo-${id}`).value) || 0;
+               
+               if (voce && importo > 0) {
+                   speseDettaglio.push({ voce, importo });
+               }
+           });
+           
+           serataCorrente = {
+               ...serataCorrente,
+               data,
+               nomeSerata,
+               speseDettaglio,
+               id: serataCorrente.id || Date.now()
+           };
+           
+           // Passa alla sezione costi
+           switchTab('costi');
+           document.querySelector('.tab[onclick="switchTab(\'costi\')"]').classList.add('active');
+           document.querySelector('.tab[onclick="switchTab(\'incasso\')"]').classList.remove('active');
+       }
 
-        function salvaSerata() {
-            if (!serataCorrente.data) {
-                alert('Completa prima la sezione incassi!');
-                return;
-            }
-            
-            // Salva tutti i dettagli del personale e artistico
-            serataCorrente.dettagliPersonale = {
-                baristi: parseInt(document.getElementById('baristi').value) || 0,
-                camerieri: parseInt(document.getElementById('camerieri').value) || 0,
-                sicurezza: parseInt(document.getElementById('sicurezza').value) || 0,
-                paninaro: parseInt(document.getElementById('paninaro').value) || 0,
-                parcheggiatore: parseInt(document.getElementById('parcheggiatore').value) || 0,
-                cassa: parseInt(document.getElementById('cassa').value) || 0,
-                ambulanza: parseInt(document.getElementById('ambulanza').value) || 0
-            };
-            
-            serataCorrente.dettagliArtistico = {
-                dj: parseFloat(document.getElementById('dj').value) || 0,
-                dj2: parseFloat(document.getElementById('dj2').value) || 0,
-                format: parseFloat(document.getElementById('format').value) || 0,
-                grafiche: parseFloat(document.getElementById('grafiche').value) || 0,
-                fotografo: parseFloat(document.getElementById('fotografo').value) || 0,
-                vocalist: parseFloat(document.getElementById('vocalist').value) || 0
-            };
-            
-            serataCorrente.speseExtra = parseFloat(document.getElementById('speseExtra').value) || 0;
-            serataCorrente.percentualeMateria = parseFloat(document.getElementById('percentualeMateria').value) || 20;
-            
-            // Controlla se stiamo modificando una serata esistente
-            const index = serate.findIndex(s => s.id === serataCorrente.id);
-            if (index >= 0) {
-                serate[index] = {...serataCorrente};
-            } else {
-                serate.push({...serataCorrente});
-            }
-            
-            if (salvaConBackup()) {
-                alert('✅ Serata salvata con successo!');
-                
-                // Reset form
-                resetForm();
-                
-                // Vai al riepilogo
-                switchTab('riepilogo');
-                document.querySelector('.tab[onclick="switchTab(\'riepilogo\')"]').classList.add('active');
-                
-                aggiornaRiepilogo();
-            }
-        }
+       function salvaSerata() {
+           if (!serataCorrente.data) {
+               alert('Completa prima la sezione incassi!');
+               return;
+           }
+           
+           // Salva tutti i dettagli del personale e artistico
+           serataCorrente.dettagliPersonale = {
+               baristi: parseInt(document.getElementById('baristi').value) || 0,
+               camerieri: parseInt(document.getElementById('camerieri').value) || 0,
+               sicurezza: parseInt(document.getElementById('sicurezza').value) || 0,
+               paninaro: parseInt(document.getElementById('paninaro').value) || 0,
+               parcheggiatore: parseInt(document.getElementById('parcheggiatore').value) || 0,
+               cassa: parseInt(document.getElementById('cassa').value) || 0,
+               ambulanza: parseInt(document.getElementById('ambulanza').value) || 0
+           };
+           
+           serataCorrente.dettagliArtistico = {
+               dj: parseFloat(document.getElementById('dj').value) || 0,
+               dj2: parseFloat(document.getElementById('dj2').value) || 0,
+               format: parseFloat(document.getElementById('format').value) || 0,
+               grafiche: parseFloat(document.getElementById('grafiche').value) || 0,
+               fotografo: parseFloat(document.getElementById('fotografo').value) || 0,
+               vocalist: parseFloat(document.getElementById('vocalist').value) || 0
+           };
+           
+           serataCorrente.speseExtra = parseFloat(document.getElementById('speseExtra').value) || 0;
+           serataCorrente.percentualeMateria = parseFloat(document.getElementById('percentualeMateria').value) || 20;
+           
+           // Controlla se stiamo modificando una serata esistente
+           if (editingId) {
+               const index = serate.findIndex(s => s.id === editingId);
+               if (index >= 0) {
+                   serataCorrente.id = editingId;
+                   serate[index] = {...serataCorrente};
+               }
+               editingId = null;
+           } else {
+               const index = serate.findIndex(s => s.id === serataCorrente.id);
+               if (index >= 0) {
+                   serate[index] = {...serataCorrente};
+               } else {
+                   serate.push({...serataCorrente});
+               }
+           }
+           
+           if (salvaConBackup()) {
+               alert('✅ Serata salvata con successo!');
+               
+               // Reset form
+               resetForm();
+               
+               // Vai al riepilogo
+               switchTab('riepilogo');
+               document.querySelector('.tab[onclick="switchTab(\'riepilogo\')"]').classList.add('active');
+               document.querySelector('.tab[onclick="switchTab(\'costi\')"]').classList.remove('active');
+               
+               aggiornaRiepilogo();
+           }
+       }
 
-        function resetForm() {
-            // Reset sezione incasso
-            document.getElementById('data').value = '';
-            document.getElementById('nomeSerata').value = '';
-            document.getElementById('dayIndicator').innerHTML = '';
-            document.getElementById('incassoPos').value = '';
-            document.getElementById('incassoContanti').value = '';
-            document.getElementById('speseContainer').innerHTML = '';
-            document.getElementById('totaleSpese').textContent = '0';
-            document.getElementById('incassoTotale').textContent = '0';
-            
-            // Reset sezione costi
-            document.getElementById('baristi').value = '0';
-            document.getElementById('camerieri').value = '0';
-            document.getElementById('sicurezza').value = '0';
-            document.getElementById('paninaro').value = '0';
-            document.getElementById('parcheggiatore').value = '0';  
-            document.getElementById('cassa').value = '0';
-            document.getElementById('ambulanza').value = '0';
-            document.getElementById('dj').value = '0';
-            document.getElementById('dj2').value = '0';
-            document.getElementById('format').value = '0';
-            document.getElementById('grafiche').value = '0';
-            document.getElementById('fotografo').value = '0';
-            document.getElementById('vocalist').value = '0';
-            document.getElementById('speseExtra').value = '0';
-            document.getElementById('percentualeMateria').value = '20';
-            
-            // Reset totali
-            document.getElementById('totalePersonale').textContent = '0';
-            document.getElementById('totaleArtistico').textContent = '0';
-            document.getElementById('costiPersonale').textContent = '0';
-            document.getElementById('costiArtistico').textContent = '0';
-            document.getElementById('costoMateria').textContent = '0';
-            document.getElementById('costiTotali').textContent = '0';
-            document.getElementById('risultatoSerata').innerHTML = '';
-            
-            // Reset grafici
-            updatePieChart(0, 0, 0);
-            
-            serataCorrente = {};
-            editingId = null;
-        }
+       function resetForm() {
+           // Reset sezione incasso
+           document.getElementById('data').value = '';
+           document.getElementById('nomeSerata').value = '';
+           document.getElementById('dayIndicator').innerHTML = '';
+           document.getElementById('incassoPos').value = '';
+           document.getElementById('incassoContanti').value = '';
+           document.getElementById('speseContainer').innerHTML = '';
+           document.getElementById('totaleSpese').textContent = '0';
+           document.getElementById('incassoTotale').textContent = '0';
+           
+           // Reset sezione costi
+           document.getElementById('baristi').value = '0';
+           document.getElementById('camerieri').value = '0';
+           document.getElementById('sicurezza').value = '0';
+           document.getElementById('paninaro').value = '0';
+           document.getElementById('parcheggiatore').value = '0';  
+           document.getElementById('cassa').value = '0';
+           document.getElementById('ambulanza').value = '0';
+           document.getElementById('dj').value = '0';
+           document.getElementById('dj2').value = '0';
+           document.getElementById('format').value = '0';
+           document.getElementById('grafiche').value = '0';
+           document.getElementById('fotografo').value = '0';
+           document.getElementById('vocalist').value = '0';
+           document.getElementById('speseExtra').value = '0';
+           document.getElementById('percentualeMateria').value = '20';
+           
+           // Reset totali
+           document.getElementById('totalePersonale').textContent = '0';
+           document.getElementById('totaleArtistico').textContent = '0';
+           document.getElementById('costiPersonale').textContent = '0';
+           document.getElementById('costiArtistico').textContent = '0';
+           document.getElementById('costoMateria').textContent = '0';
+           document.getElementById('costiTotali').textContent = '0';
+           document.getElementById('risultatoSerata').innerHTML = '';
+           
+           // Reset grafici
+           updatePieChart(0, 0, 0);
+           
+           serataCorrente = {};
+           editingId = null;
+       }
 
-        function aggiornaRiepilogo() {
-            let totaleSerate = serate.length;
-            let serateProfitto = 0;
-            let seratePerdita = 0;
-            let bilancioTotale = 0;
-            let totaleCostiPersonale = 0;
-            let totaleCostiArtistico = 0;
-            
-            const riepilogoSabato = document.getElementById('riepilogoSabato');
-            const riepilogoVenerdi = document.getElementById('riepilogoVenerdi');
-            const riepilogoExtra = document.getElementById('riepilogoExtra');
-            
-            riepilogoSabato.innerHTML = '';
-            riepilogoVenerdi.innerHTML = '';
-            riepilogoExtra.innerHTML = '';
-            
-            serate.forEach(serata => {
-                bilancioTotale += serata.risultato || 0;
-                totaleCostiPersonale += serata.costiPersonale || 0;
-                totaleCostiArtistico += serata.costiArtistico || 0;
-                
-                if ((serata.risultato || 0) >= 0) {
-                    serateProfitto++;
-                } else {
-                    seratePerdita++;
-                }
-                
-                // Determina il tipo di serata in base alla data
-                const dataSerata = new Date(serata.data + 'T00:00:00');
-                const giorno = dataSerata.getDay();
-                let tipoSerata = '';
-                
-                if (giorno === 6) { // Sabato
-                    tipoSerata = 'sabato';
-                } else if (giorno === 5) { // Venerdì
-                    tipoSerata = 'venerdi';
-                } else {
-                    tipoSerata = 'extra';
-                }
-                
-                const serataHtml = `
-                    <div class="night-item" onclick="mostraDettagliSerata(${serata.id})">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <h4 style="color: #8338ec;">${serata.nomeSerata}</h4>
-                                <p style="color: #666; font-size: 0.9em;">${formatDate(serata.data)}</p>
-                            </div>
-                            <div style="text-align: right;">
-                                <p style="font-size: 1.2em; font-weight: bold; color: ${(serata.risultato || 0) >= 0 ? '#00bf63' : '#ff006e'}">
-                                    ${(serata.risultato || 0) >= 0 ? '+' : ''}€${(serata.risultato || 0).toFixed(2)}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                if (tipoSerata === 'sabato') {
-                    riepilogoSabato.innerHTML += serataHtml;
-                } else if (tipoSerata === 'venerdi') {
-                    riepilogoVenerdi.innerHTML += serataHtml;
-                } else {
-                    riepilogoExtra.innerHTML += serataHtml;
-                }
-            });
-            
-            // Aggiorna statistiche
-            document.getElementById('totaleSerate').textContent = totaleSerate;
-            document.getElementById('serateProfitto').textContent = serateProfitto;
-            document.getElementById('seratePerdita').textContent = seratePerdita;
-            document.getElementById('bilancioTotale').textContent = (bilancioTotale >= 0 ? '+€' : '-€') + Math.abs(bilancioTotale).toFixed(2);
-            document.getElementById('bilancioTotale').style.color = bilancioTotale >= 0 ? '#00bf63' : '#ff006e';
-            document.getElementById('totaleCostiPersonale').textContent = `€${totaleCostiPersonale.toFixed(2)}`;
-            document.getElementById('totaleCostiArtistico').textContent = `€${totaleCostiArtistico.toFixed(2)}`;
-            
-            // Aggiorna grafico a barre
-            aggiornaGraficoBarre();
-        }
+       function aggiornaRiepilogo() {
+           let totaleSerate = serate.length;
+           let serateProfitto = 0;
+           let seratePerdita = 0;
+           let bilancioTotale = 0;
+           let totaleCostiPersonale = 0;
+           let totaleCostiArtistico = 0;
+           
+           const riepilogoSabato = document.getElementById('riepilogoSabato');
+           const riepilogoVenerdi = document.getElementById('riepilogoVenerdi');
+           const riepilogoExtra = document.getElementById('riepilogoExtra');
+           
+           riepilogoSabato.innerHTML = '';
+           riepilogoVenerdi.innerHTML = '';
+           riepilogoExtra.innerHTML = '';
+           
+           serate.forEach(serata => {
+               bilancioTotale += serata.risultato || 0;
+               totaleCostiPersonale += serata.costiPersonale || 0;
+               totaleCostiArtistico += serata.costiArtistico || 0;
+               
+               if ((serata.risultato || 0) >= 0) {
+                   serateProfitto++;
+               } else {
+                   seratePerdita++;
+               }
+               
+               // Determina il tipo di serata in base alla data
+               const dataSerata = new Date(serata.data + 'T00:00:00');
+               const giorno = dataSerata.getDay();
+               let tipoSerata = '';
+               
+               if (giorno === 6) { // Sabato
+                   tipoSerata = 'sabato';
+               } else if (giorno === 5) { // Venerdì
+                   tipoSerata = 'venerdi';
+               } else {
+                   tipoSerata = 'extra';
+               }
+               
+               const serataHtml = `
+                   <div class="night-item" onclick="mostraDettagliSerata(${serata.id})">
+                       <div style="display: flex; justify-content: space-between; align-items: center;">
+                           <div>
+                               <h4 style="color: #8338ec;">${serata.nomeSerata}</h4>
+                               <p style="color: #666; font-size: 0.9em;">${formatDate(serata.data)}</p>
+                           </div>
+                           <div style="text-align: right;">
+                               <p style="font-size: 1.2em; font-weight: bold; color: ${(serata.risultato || 0) >= 0 ? '#00bf63' : '#ff006e'}">
+                                   ${(serata.risultato || 0) >= 0 ? '+' : ''}€${(serata.risultato || 0).toFixed(2)}
+                               </p>
+                           </div>
+                       </div>
+                   </div>
+               `;
+               
+               if (tipoSerata === 'sabato') {
+                   riepilogoSabato.innerHTML += serataHtml;
+               } else if (tipoSerata === 'venerdi') {
+                   riepilogoVenerdi.innerHTML += serataHtml;
+               } else {
+                   riepilogoExtra.innerHTML += serataHtml;
+               }
+           });
+           
+           // Aggiorna statistiche
+           document.getElementById('totaleSerate').textContent = totaleSerate;
+           document.getElementById('serateProfitto').textContent = serateProfitto;
+           document.getElementById('seratePerdita').textContent = seratePerdita;
+           document.getElementById('bilancioTotale').textContent = (bilancioTotale >= 0 ? '+€' : '-€') + Math.abs(bilancioTotale).toFixed(2);
+           document.getElementById('bilancioTotale').style.color = bilancioTotale >= 0 ? '#00bf63' : '#ff006e';
+           document.getElementById('totaleCostiPersonale').textContent = `€${totaleCostiPersonale.toFixed(2)}`;
+           document.getElementById('totaleCostiArtistico').textContent = `€${totaleCostiArtistico.toFixed(2)}`;
+           
+           // Aggiorna grafico a barre
+           aggiornaGraficoBarre();
+       }
 
-        function aggiornaArchivio() {
-            const container = document.getElementById('listaArchivio');
-            container.innerHTML = '';
-            
-            // Ordina per data decrescente
-            const serateOrdinate = [...serate].sort((a, b) => new Date(b.data) - new Date(a.data));
-            
-            serateOrdinate.forEach(serata => {
-                const div = document.createElement('div');
-                div.className = 'night-item';
-                
-                const dataObj = new Date(serata.data + 'T00:00:00');
-                const giorno = dataObj.getDay();
-                let tipoSerata = '';
-                let className = '';
-                
-                if (giorno === 6) {
-                    tipoSerata = 'Sabato';
-                    className = 'day-sabato';
-                } else if (giorno === 5) {
-                    tipoSerata = 'Venerdì';
-                    className = 'day-venerdi';
-                } else {
-                    tipoSerata = 'Extra';
-                    className = 'day-extra';
-                }
-                
-                div.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div style="flex-grow: 1;">
-                            <strong>${serata.nomeSerata || 'Serata senza nome'}</strong>
-                            <span class="day-indicator ${className}">${tipoSerata}</span><br>
-                            <small>${serata.data}</small><br>
-                            Incasso: €${(serata.incassoTotale || 0).toFixed(2)} | 
-                            Costi: €${(serata.costiTotali || 0).toFixed(2)}<br>
-                            <strong style="color: ${serata.risultato >= 0 ? '#00bf63' : '#ff006e'}">
-                                ${serata.risultato >= 0 ? 'Profitto' : 'Perdita'}: €${Math.abs(serata.risultato || 0).toFixed(2)}
-                            </strong><br>
-                            <small style="color: #666;">
-                                Personale: €${(serata.costiPersonale || 0).toFixed(2)} | 
-                                Artistico: €${(serata.costiArtistico || 0).toFixed(2)}
-                            </small>
-                        </div>
-                        <div style="display: flex; flex-direction: column; gap: 5px;">
-                            <button class="edit-btn" onclick="modificaSerata(${serata.id})">✏️ Modifica</button>
-                            <button class="remove-btn" onclick="eliminaSerata(${serata.id})">🗑️ Elimina</button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(div);
-            });
-            
-            if (serate.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #666;">Nessuna serata salvata</p>';
-            }
-        }
+       function aggiornaGraficoBarre() {
+           const ctx = document.getElementById('barChart');
+           if (!ctx) return;
+           
+           // Prepara i dati per il grafico
+           const labels = serate.slice(-10).map(s => s.nomeSerata);
+           const data = serate.slice(-10).map(s => s.risultato || 0);
+           const colors = data.map(d => d >= 0 ? '#00bf63' : '#ff006e');
+           
+           if (barChart) {
+               barChart.destroy();
+           }
+           
+           barChart = new Chart(ctx, {
+               type: 'bar',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Risultato Serata',
+                       data: data,
+                       backgroundColor: colors,
+                       borderWidth: 0
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: true,
+                   plugins: {
+                       legend: {
+                           display: false
+                       },
+                       title: {
+                           display: true,
+                           text: 'Ultime 10 Serate',
+                           color: '#ffffff',
+                           font: {
+                               size: 16
+                           }
+                       }
+                   },
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           grid: {
+                               color: '#2a2a3e'
+                           },
+                           ticks: {
+                               color: '#ffffff'
+                           }
+                       },
+                       x: {
+                           grid: {
+                               display: false
+                           },
+                           ticks: {
+                               color: '#ffffff',
+                               maxRotation: 45,
+                               minRotation: 45
+                           }
+                       }
+                   }
+               }
+           });
+       }
 
-        function cercaArchivio() {
-            const searchTerm = document.getElementById('searchArchivio').value.toLowerCase();
-            const serateItems = document.querySelectorAll('#listaArchivio .night-item');
-            
-            serateItems.forEach(item => {
-                const text = item.textContent.toLowerCase();
-                if (text.includes(searchTerm)) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        }
+       function modificaSerata(id) {
+           const serata = serate.find(s => s.id === id);
+           if (!serata) return;
+           
+           editingId = id;
+           serataCorrente = {...serata};
+           
+           // Compila i dati della prima sezione
+           document.getElementById('data').value = serata.data;
+           document.getElementById('nomeSerata').value = serata.nomeSerata || '';
+           aggiornaTipoSerata();
+           
+           document.getElementById('incassoPos').value = serata.incassoPos || 0;
+           document.getElementById('incassoContanti').value = serata.incassoContanti || 0;
+           
+           // Ricostruisci le spese dalla cassa
+           document.getElementById('speseContainer').innerHTML = '';
+           if (serata.speseDettaglio) {
+               serata.speseDettaglio.forEach(spesa => {
+                   aggiungiSpesa();
+                   const speseElements = document.querySelectorAll('[id^="spesa-"]');
+                   const lastElement = speseElements[speseElements.length - 1];
+                   const id = lastElement.id.split('-')[1];
+                   document.getElementById(`voce-${id}`).value = spesa.voce;
+                   document.getElementById(`importo-${id}`).value = spesa.importo;
+               });
+           }
+           
+           calcolaTotaleSpese();
+           
+           // Carica i costi del personale
+           if (serata.dettagliPersonale) {
+               document.getElementById('baristi').value = serata.dettagliPersonale.baristi || 0;
+               document.getElementById('camerieri').value = serata.dettagliPersonale.camerieri || 0;
+               document.getElementById('sicurezza').value = serata.dettagliPersonale.sicurezza || 0;
+               document.getElementById('paninaro').value = serata.dettagliPersonale.paninaro || 0;
+               document.getElementById('parcheggiatore').value = serata.dettagliPersonale.parcheggiatore || 0;
+               document.getElementById('cassa').value = serata.dettagliPersonale.cassa || 0;
+               document.getElementById('ambulanza').value = serata.dettagliPersonale.ambulanza || 0;
+           }
+           
+           // Carica i costi artistici
+           if (serata.dettagliArtistico) {
+               document.getElementById('dj').value = serata.dettagliArtistico.dj || 0;
+               document.getElementById('dj2').value = serata.dettagliArtistico.dj2 || 0;
+               document.getElementById('format').value = serata.dettagliArtistico.format || 0;
+               document.getElementById('grafiche').value = serata.dettagliArtistico.grafiche || 0;
+               document.getElementById('fotografo').value = serata.dettagliArtistico.fotografo || 0;
+               document.getElementById('vocalist').value = serata.dettagliArtistico.vocalist || 0;
+           }
+           
+           document.getElementById('speseExtra').value = serata.speseExtra || 0;
+           document.getElementById('percentualeMateria').value = serata.percentualeMateria || 20;
+           
+           calcolaIncassoTotale();
+           calcolaCostiTotali();
+           
+           // Vai alla prima sezione
+           switchTab('incasso');
+           document.querySelector('.tab[onclick="switchTab(\'incasso\')"]').classList.add('active');
+           document.querySelectorAll('.tab').forEach(tab => {
+               if (!tab.onclick.toString().includes('incasso')) {
+                   tab.classList.remove('active');
+               }
+           });
+           
+           alert('📝 Modalità modifica attivata. Apporta le modifiche e salva nuovamente.');
+       }
 
-        function modificaSerata(id) {
-            const serata = serate.find(s => s.id === id);
-            if (!serata) return;
-            
-            // Carica i dati della serata nel form
-            serataCorrente = {...serata};
-            
-            document.getElementById('data').value = serata.data;
-            document.getElementById('nomeSerata').value = serata.nomeSerata || '';
-            aggiornaTipoSerata();
-            
-            document.getElementById('incassoPos').value = serata.incassoPos || 0;
-            document.getElementById('incassoContanti').value = serata.incassoContanti || 0;
-            
-            // Carica le spese dalla cassa
-            const speseContainer = document.getElementById('speseContainer');
-            speseContainer.innerHTML = '';
-            if (serata.speseDettaglio) {
-                serata.speseDettaglio.forEach(spesa => {
-                    aggiungiSpesa();
-                    const ultimaSpesa = speseContainer.lastChild;
-                    ultimaSpesa.querySelector('input[type="text"]').value = spesa.descrizione;
-                    ultimaSpesa.querySelector('input[type="number"]').value = spesa.importo;
-                });
-            }
-            
-            // Carica i costi del personale
-            if (serata.dettagliPersonale) {
-                document.getElementById('baristi').value = serata.dettagliPersonale.baristi || 0;
-                document.getElementById('camerieri').value = serata.dettagliPersonale.camerieri || 0;
-                document.getElementById('sicurezza').value = serata.dettagliPersonale.sicurezza || 0;
-                document.getElementById('paninaro').value = serata.dettagliPersonale.paninaro || 0;
-                document.getElementById('parcheggiatore').value = serata.dettagliPersonale.parcheggiatore || 0;
-                document.getElementById('cassa').value = serata.dettagliPersonale.cassa || 0;
-                document.getElementById('ambulanza').value = serata.dettagliPersonale.ambulanza || 0;
-            }
-            
-            // Carica i costi artistici
-            if (serata.dettagliArtistico) {
-                document.getElementById('dj').value = serata.dettagliArtistico.dj || 0;
-                document.getElementById('dj2').value = serata.dettagliArtistico.dj2 || 0;
-                document.getElementById('format').value = serata.dettagliArtistico.format || 0;
-                document.getElementById('grafiche').value = serata.dettagliArtistico.grafiche || 0;
-                document.getElementById('fotografo').value = serata.dettagliArtistico.fotografo || 0;
-                document.getElementById('vocalist').value = serata.dettagliArtistico.vocalist || 0;
-            }
-            
-            document.getElementById('speseExtra').value = serata.speseExtra || 0;
-            
-            calcolaIncassoTotale();
-            calcolaCostiTotali();
-            
-            // Vai alla prima tab
-            switchTab('incasso');
-            document.querySelector('.tab[onclick="switchTab(\'incasso\')"]').click();
-        }
+       function aggiornaArchivio() {
+           const listaArchivio = document.getElementById('listaArchivio');
+           listaArchivio.innerHTML = '';
+           
+           // Ordina per data decrescente
+           const serateOrdinate = [...serate].sort((a, b) => new Date(b.data) - new Date(a.data));
+           
+           serateOrdinate.forEach(serata => {
+               const dataObj = new Date(serata.data + 'T00:00:00');
+               const giorno = dataObj.getDay();
+               let tipoSerata = '';
+               let className = '';
+               
+               if (giorno === 6) {
+                   tipoSerata = 'Sabato';
+                   className = 'day-sabato';
+               } else if (giorno === 5) {
+                   tipoSerata = 'Venerdì';
+                   className = 'day-venerdi';
+               } else {
+                   tipoSerata = 'Extra';
+                   className = 'day-extra';
+               }
+               
+               const serataHtml = `
+                   <div class="night-item">
+                       <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                           <div style="flex: 1;">
+                               <h3 style="color: #8338ec; margin-bottom: 10px;">${serata.nomeSerata}</h3>
+                               <span class="day-indicator ${className}">${tipoSerata}</span>
+                               <p style="color: #666; margin-top: 10px;">${formatDate(serata.data)}</p>
+                               <div style="margin-top: 15px;">
+                                   <span style="color: #3a86ff;">Incasso: €${(serata.incassoTotale || 0).toFixed(2)}</span> | 
+                                   <span style="color: #ff006e;">Costi: €${(serata.costiTotali || 0).toFixed(2)}</span> | 
+                                   <span style="color: ${(serata.risultato || 0) >= 0 ? '#00bf63' : '#ff006e'}; font-weight: bold;">
+                                       Risultato: ${(serata.risultato || 0) >= 0 ? '+' : ''}€${(serata.risultato || 0).toFixed(2)}
+                                   </span>
+                               </div>
+                               <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                                   Personale: €${(serata.costiPersonale || 0).toFixed(2)} | 
+                                   Artistico: €${(serata.costiArtistico || 0).toFixed(2)}
+                               </div>
+                           </div>
+                           <div style="display: flex; flex-direction: column; gap: 5px; margin-left: 20px;">
+                               <button onclick="modificaSerata(${serata.id})" class="edit-btn" style="margin: 0;">✏️ Modifica</button>
+                               <button onclick="esportaPDF(${serata.id})" style="margin: 0;">📄 PDF</button>
+                               <button onclick="eliminaSerata(${serata.id})" class="remove-btn" style="margin: 0;">🗑️ Elimina</button>
+                           </div>
+                       </div>
+                   </div>
+               `;
+               listaArchivio.innerHTML += serataHtml;
+           });
+           
+           if (serate.length === 0) {
+               listaArchivio.innerHTML = '<p style="text-align: center; color: #666;">Nessuna serata salvata</p>';
+           }
+       }
 
-        function eliminaSerata(id) {
-            if (confirm('Sei sicuro di voler eliminare questa serata?')) {
-                serate = serate.filter(s => s.id !== id);
-                salvaConBackup();
-                aggiornaArchivio();
-                aggiornaRiepilogo();
-            }
-        }
+       function cercaArchivio() {
+           const searchTerm = document.getElementById('searchArchivio').value.toLowerCase();
+           const items = document.querySelectorAll('#listaArchivio .night-item');
+           
+           items.forEach(item => {
+               const text = item.textContent.toLowerCase();
+               if (text.includes(searchTerm)) {
+                   item.style.display = 'block';
+               } else {
+                   item.style.display = 'none';
+               }
+           });
+       }
 
-        // Funzioni di export/import
-        function esportaDati() {
-            const datiEsport = {
-                serate: serate,
-                dataEsportazione: new Date().toISOString(),
-                versione: '2.0'
-            };
-            
-            const blob = new Blob([JSON.stringify(datiEsport, null, 2)], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `serate_backup_${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
+       function mostraDettagliSerata(id) {
+           const serata = serate.find(s => s.id === id);
+           if (!serata) return;
+           
+           let dettagliSpese = '';
+           if (serata.speseDettaglio) {
+               serata.speseDettaglio.forEach(spesa => {
+                   dettagliSpese += `${spesa.voce}: €${spesa.importo.toFixed(2)}\n`;
+               });
+           }
+           
+           const dettagli = `
+📅 DETTAGLI SERATA: ${serata.nomeSerata}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-        function importaDati() {
-            document.getElementById('fileImport').click();
-        }
+📊 INCASSI:
+- POS: €${(serata.incassoPos || 0).toFixed(2)}
+- Contanti: €${(serata.incassoContanti || 0).toFixed(2)}
+- Spese pagate dalla cassa: €${(serata.speseCassa || 0).toFixed(2)}
+- INCASSO TOTALE LORDO: €${(serata.incassoTotale || 0).toFixed(2)}
 
-        function leggiFile(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const dati = JSON.parse(e.target.result);
-                    
-                    if (dati.serate && Array.isArray(dati.serate)) {
-                        if (confirm('Vuoi sostituire tutti i dati esistenti o aggiungerli a quelli attuali?\n\nOK = Sostituisci tutto\nAnnulla = Aggiungi ai dati esistenti')) {
-                            serate = dati.serate;
-                        } else {
-                            // Aggiungi evitando duplicati
-                            dati.serate.forEach(nuovaSerata => {
-                                const esiste = serate.find(s => s.data === nuovaSerata.data && s.nomeSerata === nuovaSerata.nomeSerata);
-                                if (!esiste) {
-                                    nuovaSerata.id = Date.now() + Math.random();
-                                    serate.push(nuovaSerata);
-                                }
-                            });
-                        }
-                        
-                        salvaConBackup();
-                        aggiornaRiepilogo();
-                        aggiornaArchivio();
-                        alert('Dati importati con successo!');
-                    } else {
-                        alert('File non valido!');
-                    }
-                } catch (error) {
-                    alert('Errore nella lettura del file!');
-                    console.error(error);
-                }
-            };
-            reader.readAsText(file);
-        }
+💸 DETTAGLIO SPESE DALLA CASSA:
+${dettagliSpese || 'Nessuna spesa registrata'}
 
-        // Inizializza i grafici
-        function initCharts() {
-            // Grafico a torta per incassi
-            const ctxPie = document.getElementById('pieChart').getContext('2d');
-            pieChart = new Chart(ctxPie, {
-                type: 'doughnut',
-                data: {
-                    labels: ['POS', 'Contanti', 'Spese dalla Cassa'],
-                    datasets: [{
-                        data: [0, 0, 0],
-                        backgroundColor: [
-                            '#3a86ff',
-                            '#00bf63',
-                            '#ff006e'
-                        ],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: '#ffffff',
-                                padding: 20
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // Inizializza il grafico a barre (verrà aggiornato in aggiornaRiepilogo)
-            const ctxBar = document.getElementById('barChart');
-            if (ctxBar) {
-                barChart = new Chart(ctxBar, {
-                    type: 'bar',
-                    data: {
-                        labels: [],
-                        datasets: [{
-                            label: 'Risultato Serata',
-                            data: [],
-                            backgroundColor: '#8338ec'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            y: {
-                                grid: { color: '#2a2a3e' },
-                                ticks: { color: '#ffffff' }
-                            },
-                            x: {
-                                grid: { display: false },
-                                ticks: { color: '#ffffff' }
-                            }
-                        }
-                    }
-                });
-            }
-        }
+👥 COSTI PERSONALE: €${(serata.costiPersonale || 0).toFixed(2)}
+🎭 COSTI ARTISTICO: €${(serata.costiArtistico || 0).toFixed(2)}
 
-        function updatePieChart(pos, contanti, spese) {
-            if (pieChart) {
-                pieChart.data.datasets[0].data = [pos, contanti, spese];
-                pieChart.update();
-            }
-        }
-    </script>
+💰 COSTI TOTALI:
+- Personale: €${(serata.costiPersonale || 0).toFixed(2)}
+- Artistico: €${(serata.costiArtistico || 0).toFixed(2)}
+- Costi Fissi: €3,500.00
+- Materia Prima (${serata.percentualeMateria || 20}%): €${(serata.costoMateria || 0).to
+- Materia Prima (${serata.percentualeMateria || 20}%): €${(serata.costoMateria || 0).toFixed(2)}
+- TOTALE COSTI: €${(serata.costiTotali || 0).toFixed(2)}
+
+📈 RISULTATO: ${(serata.risultato || 0) >= 0 ? 'PROFITTO' : 'PERDITA'} di €${Math.abs(serata.risultato || 0).toFixed(2)}
+           `;
+           
+           alert(dettagli);
+       }
+
+       function eliminaSerata(id) {
+           if (confirm('Sei sicuro di voler eliminare questa serata?')) {
+               serate = serate.filter(s => s.id !== id);
+               salvaConBackup();
+               aggiornaRiepilogo();
+               aggiornaArchivio();
+               alert('Serata eliminata!');
+           }
+       }
+
+       function esportaPDF(id) {
+           const serata = serate.find(s => s.id === id);
+           if (!serata) return;
+           
+           // In una vera applicazione, qui useresti una libreria come jsPDF
+           // Per ora, creiamo un report testuale che può essere copiato
+           let report = `
+REPORT SERATA - ${serata.nomeSerata}
+Data: ${formatDate(serata.data)}
+
+INCASSI:
+- POS: €${(serata.incassoPos || 0).toFixed(2)}
+- Contanti: €${(serata.incassoContanti || 0).toFixed(2)}
+- Spese dalla cassa: €${(serata.speseCassa || 0).toFixed(2)}
+- INCASSO TOTALE LORDO: €${(serata.incassoTotale || 0).toFixed(2)}
+
+COSTI:
+- Personale: €${(serata.costiPersonale || 0).toFixed(2)}
+- Artistico: €${(serata.costiArtistico || 0).toFixed(2)}
+- Costi Fissi: €3,500.00
+- Materia Prima: €${(serata.costoMateria || 0).toFixed(2)}
+- TOTALE COSTI: €${(serata.costiTotali || 0).toFixed(2)}
+
+RISULTATO FINALE: €${(serata.risultato || 0).toFixed(2)}
+           `;
+           
+           // Crea un elemento temporaneo per il download
+           const element = document.createElement('a');
+           element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(report));
+           element.setAttribute('download', `Serata_${serata.nomeSerata}_${serata.data}.txt`);
+           element.style.display = 'none';
+           document.body.appendChild(element);
+           element.click();
+           document.body.removeChild(element);
+           
+           alert('Report scaricato! (In una versione completa sarebbe un PDF)');
+       }
+
+       // Funzioni di export/import
+       function esportaDati() {
+           const datiEsport = {
+               serate: serate,
+               dataEsportazione: new Date().toISOString(),
+               versione: '2.0'
+           };
+           
+           const blob = new Blob([JSON.stringify(datiEsport, null, 2)], {type: 'application/json'});
+           const url = URL.createObjectURL(blob);
+           const a = document.createElement('a');
+           a.href = url;
+           a.download = `serate_backup_${new Date().toISOString().split('T')[0]}.json`;
+           document.body.appendChild(a);
+           a.click();
+           document.body.removeChild(a);
+           URL.revokeObjectURL(url);
+       }
+
+       function importaDati() {
+           document.getElementById('fileImport').click();
+       }
+
+       function leggiFile(event) {
+           const file = event.target.files[0];
+           if (!file) return;
+           
+           const reader = new FileReader();
+           reader.onload = function(e) {
+               try {
+                   const dati = JSON.parse(e.target.result);
+                   
+                   if (dati.serate && Array.isArray(dati.serate)) {
+                       if (confirm('Vuoi sostituire tutti i dati esistenti o aggiungerli a quelli attuali?\n\nOK = Sostituisci tutto\nAnnulla = Aggiungi ai dati esistenti')) {
+                           serate = dati.serate;
+                       } else {
+                           // Aggiungi evitando duplicati
+                           dati.serate.forEach(nuovaSerata => {
+                               const esiste = serate.find(s => s.data === nuovaSerata.data && s.nomeSerata === nuovaSerata.nomeSerata);
+                               if (!esiste) {
+                                   nuovaSerata.id = Date.now() + Math.random();
+                                   serate.push(nuovaSerata);
+                               }
+                           });
+                       }
+                       
+                       salvaConBackup();
+                       aggiornaRiepilogo();
+                       aggiornaArchivio();
+                       alert('Dati importati con successo!');
+                   } else {
+                       alert('File non valido!');
+                   }
+               } catch (error) {
+                   alert('Errore nella lettura del file!');
+                   console.error(error);
+               }
+           };
+           reader.readAsText(file);
+       }
+
+       // Inizializza i grafici
+       function initCharts() {
+           // Grafico a torta per incassi
+           const ctxPie = document.getElementById('pieChart').getContext('2d');
+           pieChart = new Chart(ctxPie, {
+               type: 'doughnut',
+               data: {
+                   labels: ['POS', 'Contanti', 'Spese dalla Cassa'],
+                   datasets: [{
+                       data: [0, 0, 0],
+                       backgroundColor: [
+                           '#3a86ff',
+                           '#00bf63',
+                           '#ff006e'
+                       ],
+                       borderWidth: 0
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: true,
+                   plugins: {
+                       legend: {
+                           position: 'bottom',
+                           labels: {
+                               color: '#ffffff',
+                               padding: 20
+                           }
+                       }
+                   }
+               }
+           });
+           
+           // Inizializza il grafico a barre (verrà aggiornato in aggiornaRiepilogo)
+           const ctxBar = document.getElementById('barChart');
+           if (ctxBar) {
+               barChart = new Chart(ctxBar, {
+                   type: 'bar',
+                   data: {
+                       labels: [],
+                       datasets: [{
+                           label: 'Risultato Serata',
+                           data: [],
+                           backgroundColor: '#8338ec'
+                       }]
+                   },
+                   options: {
+                       responsive: true,
+                       maintainAspectRatio: true,
+                       plugins: {
+                           legend: { display: false }
+                       },
+                       scales: {
+                           y: {
+                               grid: { color: '#2a2a3e' },
+                               ticks: { color: '#ffffff' }
+                           },
+                           x: {
+                               grid: { display: false },
+                               ticks: { color: '#ffffff' }
+                           }
+                       }
+                   }
+               });
+           }
+       }
+
+       function updatePieChart(pos, contanti, spese) {
+           if (pieChart) {
+               pieChart.data.datasets[0].data = [pos, contanti, spese];
+               pieChart.update();
+           }
+       }
+
+       // Funzioni di utilità
+       function formatDate(dateString) {
+           const date = new Date(dateString + 'T00:00:00');
+           return date.toLocaleDateString('it-IT', { 
+               weekday: 'long', 
+               year: 'numeric', 
+               month: 'long', 
+               day: 'numeric' 
+           });
+       }
+
+       function capitalizeFirst(string) {
+           return string.charAt(0).toUpperCase() + string.slice(1);
+       }
+   </script>
 </body>
 </html>
+
