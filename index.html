@@ -379,11 +379,11 @@
         </header>
 
         <div class="tabs">
-            <div class="tab active" onclick="switchTab('incasso', event)">💰 Incasso Serata</div>
-            <div class="tab" onclick="switchTab('costi', event)">📊 Costi Personale e Artistico</div>
-            <div class="tab" onclick="switchTab('riepilogo', event)">📈 Riepilogo Totale</div>
-            <div class="tab" onclick="switchTab('archivio', event)">📁 Archivio Serate</div>
-        </div> 
+            <div class="tab active" onclick="switchTab('incasso', this)">💰 Incasso Serata</div>
+            <div class="tab" onclick="switchTab('costi', this)">📊 Costi Personale e Artistico</div>
+            <div class="tab" onclick="switchTab('riepilogo', this)">📈 Riepilogo Totale</div>
+            <div class="tab" onclick="switchTab('archivio', this)">📁 Archivio Serate</div>
+        </div>
 <!-- Sezione 1: Incasso Serata -->
         <div id="incasso" class="section active">
             <div class="card">
@@ -655,8 +655,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script> 
-// Variabili globali
+<script>
+        // Variabili globali
         let serate = [];
         let serataCorrente = {};
         let spese = [];
@@ -667,20 +667,17 @@
         // Sistema di backup automatico
         function salvaConBackup() {
             try {
-                // Salva i dati principali
                 localStorage.setItem('serate', JSON.stringify(serate));
                 
-                // Crea backup con timestamp
                 const backup = {
                     data: serate,
                     timestamp: new Date().toISOString(),
                     version: '2.0'
                 };
                 
-                // Mantieni gli ultimi 5 backup
                 let backups = JSON.parse(localStorage.getItem('backups_serate')) || [];
                 backups.unshift(backup);
-                backups = backups.slice(0, 5); // Mantieni solo i 5 più recenti
+                backups = backups.slice(0, 5);
                 
                 localStorage.setItem('backups_serate', JSON.stringify(backups));
                 
@@ -695,7 +692,6 @@
 
         function caricaDati() {
             try {
-                // Prova a caricare i dati principali
                 const datiSalvati = localStorage.getItem('serate');
                 if (datiSalvati) {
                     serate = JSON.parse(datiSalvati);
@@ -703,7 +699,6 @@
                     return true;
                 }
                 
-                // Se non ci sono dati principali, prova con i backup
                 const backups = JSON.parse(localStorage.getItem('backups_serate')) || [];
                 if (backups.length > 0) {
                     serate = backups[0].data;
@@ -716,7 +711,6 @@
             } catch (error) {
                 console.error('Errore nel caricamento:', error);
                 
-                // Tentativo di recupero dai backup
                 try {
                     const backups = JSON.parse(localStorage.getItem('backups_serate')) || [];
                     if (backups.length > 0) {
@@ -725,8 +719,6 @@
                         return true;
                     }
                 } catch (backupError) {
-                    console.error('
-} catch (backupError) {
                     console.error('Errore anche nei backup:', backupError);
                 }
                 
@@ -751,15 +743,15 @@
             
             if (dataInput.value) {
                 const data = new Date(dataInput.value + 'T00:00:00');
-                const giorno = data.getDay(); // 0 = Domenica, 1 = Lunedì, ..., 6 = Sabato
+                const giorno = data.getDay();
                 
                 let tipoSerata = '';
                 let className = '';
                 
-                if (giorno === 6) { // Sabato
+                if (giorno === 6) {
                     tipoSerata = 'Sabato';
                     className = 'day-sabato';
-                } else if (giorno === 5) { // Venerdì  
+                } else if (giorno === 5) {
                     tipoSerata = 'Venerdì';
                     className = 'day-venerdi';
                 } else {
@@ -773,13 +765,7 @@
         }
 
         // Cambio tab
-        function switchTab(tabName, event) {
-            // Previeni comportamenti indesiderati
-            if (event) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            
+        function switchTab(tabName, tabElement) {
             // Nascondi tutte le sezioni
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.remove('active');
@@ -794,15 +780,8 @@
             document.getElementById(tabName).classList.add('active');
             
             // Attiva il tab selezionato
-            if (event && event.target) {
-                event.target.classList.add('active');
-            } else {
-                // Se non c'è event, trova il tab corrispondente
-                document.querySelectorAll('.tab').forEach(tab => {
-                    if (tab.textContent.toLowerCase().includes(tabName.substring(0, 4))) {
-                        tab.classList.add('active');
-                    }
-                });
+            if (tabElement) {
+                tabElement.classList.add('active');
             }
             
             // Aggiorna i dati se necessario
@@ -851,17 +830,14 @@
             const contanti = parseFloat(document.getElementById('incassoContanti').value) || 0;
             const spese = parseFloat(document.getElementById('totaleSpese').textContent) || 0;
             
-            // L'incasso totale è la somma di tutto (le spese sono state pagate con questi soldi)
             const incassoTotale = pos + contanti + spese;
             document.getElementById('incassoTotale').textContent = incassoTotale.toFixed(2);
             
-            // Salva nei dati della serata
             serataCorrente.incassoPos = pos;
             serataCorrente.incassoContanti = contanti;
             serataCorrente.speseCassa = spese;
             serataCorrente.incassoTotale = incassoTotale;
             
-            // Aggiorna il grafico a torta
             updatePieChart(pos, contanti, spese);
         }
 
@@ -894,7 +870,7 @@
             const incassoTotale = serataCorrente.incassoTotale || 0;
             const costoMateria = (incassoTotale * percentualeMateria) / 100;
             
-            const costiFissi = 3500; // Aggiornato a 3500
+            const costiFissi = 3500;
             const costiTotali = costiPersonale + costiArtistico + costiFissi + costoMateria + speseExtra;
             
             // Aggiorna i display
@@ -934,7 +910,6 @@
             serataCorrente.risultato = risultato;
         }
 function salvaIncasso() {
-            // Recupera i dati dell'incasso
             const data = document.getElementById('data').value;
             const nomeSerata = document.getElementById('nomeSerata').value;
             
@@ -943,7 +918,6 @@ function salvaIncasso() {
                 return;
             }
             
-            // Recupera le spese
             const speseElements = document.querySelectorAll('[id^="spesa-"]');
             let speseDettaglio = [];
             
@@ -966,9 +940,8 @@ function salvaIncasso() {
             };
             
             // Passa alla sezione costi
-            switchTab('costi');
-            document.querySelector('.tab[onclick*="costi"]').classList.add('active');
-            document.querySelector('.tab[onclick*="incasso"]').classList.remove('active');
+            const costiTab = document.querySelector('.tab:nth-child(2)');
+            switchTab('costi', costiTab);
         }
 
         function salvaSerata() {
@@ -977,7 +950,6 @@ function salvaIncasso() {
                 return;
             }
             
-            // Salva tutti i dettagli del personale e artistico
             serataCorrente.dettagliPersonale = {
                 baristi: parseInt(document.getElementById('baristi').value) || 0,
                 camerieri: parseInt(document.getElementById('camerieri').value) || 0,
@@ -1000,7 +972,6 @@ function salvaIncasso() {
             serataCorrente.speseExtra = parseFloat(document.getElementById('speseExtra').value) || 0;
             serataCorrente.percentualeMateria = parseFloat(document.getElementById('percentualeMateria').value) || 20;
             
-            // Controlla se stiamo modificando una serata esistente
             if (editingId) {
                 const index = serate.findIndex(s => s.id === editingId);
                 if (index >= 0) {
@@ -1019,21 +990,16 @@ function salvaIncasso() {
             
             if (salvaConBackup()) {
                 alert('✅ Serata salvata con successo!');
-                
-                // Reset form
                 resetForm();
                 
-                // Vai al riepilogo
-                switchTab('riepilogo');
-                document.querySelector('.tab[onclick*="riepilogo"]').classList.add('active');
-                document.querySelector('.tab[onclick*="costi"]').classList.remove('active');
+                const riepilogoTab = document.querySelector('.tab:nth-child(3)');
+                switchTab('riepilogo', riepilogoTab);
                 
                 aggiornaRiepilogo();
             }
         }
 
         function resetForm() {
-            // Reset sezione incasso
             document.getElementById('data').value = '';
             document.getElementById('nomeSerata').value = '';
             document.getElementById('dayIndicator').innerHTML = '';
@@ -1043,7 +1009,6 @@ function salvaIncasso() {
             document.getElementById('totaleSpese').textContent = '0';
             document.getElementById('incassoTotale').textContent = '0';
             
-            // Reset sezione costi
             document.getElementById('baristi').value = '0';
             document.getElementById('camerieri').value = '0';
             document.getElementById('sicurezza').value = '0';
@@ -1060,7 +1025,6 @@ function salvaIncasso() {
             document.getElementById('speseExtra').value = '0';
             document.getElementById('percentualeMateria').value = '20';
             
-            // Reset totali
             document.getElementById('totalePersonale').textContent = '0';
             document.getElementById('totaleArtistico').textContent = '0';
             document.getElementById('costiPersonale').textContent = '0';
@@ -1069,7 +1033,6 @@ function salvaIncasso() {
             document.getElementById('costiTotali').textContent = '0';
             document.getElementById('risultatoSerata').innerHTML = '';
             
-            // Reset grafici
             updatePieChart(0, 0, 0);
             
             serataCorrente = {};
@@ -1102,14 +1065,13 @@ function aggiornaRiepilogo() {
                     seratePerdita++;
                 }
                 
-                // Determina il tipo di serata in base alla data
                 const dataSerata = new Date(serata.data + 'T00:00:00');
                 const giorno = dataSerata.getDay();
                 let tipoSerata = '';
                 
-                if (giorno === 6) { // Sabato
+                if (giorno === 6) {
                     tipoSerata = 'sabato';
-                } else if (giorno === 5) { // Venerdì
+                } else if (giorno === 5) {
                     tipoSerata = 'venerdi';
                 } else {
                     tipoSerata = 'extra';
@@ -1140,7 +1102,6 @@ function aggiornaRiepilogo() {
                 }
             });
             
-            // Aggiorna statistiche
             document.getElementById('totaleSerate').textContent = totaleSerate;
             document.getElementById('serateProfitto').textContent = serateProfitto;
             document.getElementById('seratePerdita').textContent = seratePerdita;
@@ -1149,7 +1110,6 @@ function aggiornaRiepilogo() {
             document.getElementById('totaleCostiPersonale').textContent = `€${totaleCostiPersonale.toFixed(2)}`;
             document.getElementById('totaleCostiArtistico').textContent = `€${totaleCostiArtistico.toFixed(2)}`;
             
-            // Aggiorna grafico a barre
             aggiornaGraficoBarre();
         }
 
@@ -1157,7 +1117,6 @@ function aggiornaRiepilogo() {
             const ctx = document.getElementById('barChart');
             if (!ctx) return;
             
-            // Prepara i dati per il grafico
             const labels = serate.slice(-10).map(s => s.nomeSerata);
             const data = serate.slice(-10).map(s => s.risultato || 0);
             const colors = data.map(d => d >= 0 ? '#00bf63' : '#ff006e');
@@ -1217,15 +1176,13 @@ function aggiornaRiepilogo() {
                 }
             });
         }
-
-        function modificaSerata(id) {
+function modificaSerata(id) {
             const serata = serate.find(s => s.id === id);
             if (!serata) return;
             
             editingId = id;
             serataCorrente = {...serata};
             
-            // Compila i dati della prima sezione
             document.getElementById('data').value = serata.data;
             document.getElementById('nomeSerata').value = serata.nomeSerata || '';
             aggiornaTipoSerata();
@@ -1233,7 +1190,6 @@ function aggiornaRiepilogo() {
             document.getElementById('incassoPos').value = serata.incassoPos || 0;
             document.getElementById('incassoContanti').value = serata.incassoContanti || 0;
             
-            // Ricostruisci le spese dalla cassa
             document.getElementById('speseContainer').innerHTML = '';
             if (serata.speseDettaglio) {
                 serata.speseDettaglio.forEach(spesa => {
@@ -1248,7 +1204,6 @@ function aggiornaRiepilogo() {
             
             calcolaTotaleSpese();
             
-            // Carica i costi del personale
             if (serata.dettagliPersonale) {
                 document.getElementById('baristi').value = serata.dettagliPersonale.baristi || 0;
                 document.getElementById('camerieri').value = serata.dettagliPersonale.camerieri || 0;
@@ -1259,7 +1214,6 @@ function aggiornaRiepilogo() {
                 document.getElementById('ambulanza').value = serata.dettagliPersonale.ambulanza || 0;
             }
             
-            // Carica i costi artistici
             if (serata.dettagliArtistico) {
                 document.getElementById('dj').value = serata.dettagliArtistico.dj || 0;
                 document.getElementById('dj2').value = serata.dettagliArtistico.dj2 || 0;
@@ -1275,16 +1229,16 @@ function aggiornaRiepilogo() {
             calcolaIncassoTotale();
             calcolaCostiTotali();
             
-            // Vai alla prima sezione
-            switchTab('incasso');
+            const incassoTab = document.querySelector('.tab:nth-child(1)');
+            switchTab('incasso', incassoTab);
             
             alert('📝 Modalità modifica attivata. Apporta le modifiche e salva nuovamente.');
-        } 
-function aggiornaArchivio() {
+        }
+
+        function aggiornaArchivio() {
             const listaArchivio = document.getElementById('listaArchivio');
             listaArchivio.innerHTML = '';
             
-            // Ordina per data decrescente
             const serateOrdinate = [...serate].sort((a, b) => new Date(b.data) - new Date(a.data));
             
             serateOrdinate.forEach(serata => {
@@ -1352,8 +1306,7 @@ function aggiornaArchivio() {
                 }
             });
         }
-
-        function mostraDettagliSerata(id) {
+function mostraDettagliSerata(id) {
             const serata = serate.find(s => s.id === id);
             if (!serata) return;
             
@@ -1372,7 +1325,6 @@ function aggiornaArchivio() {
 
 📊 INCASSI:
 - POS: €${(serata.incassoPos || 0).toFixed(2)}
-- Contanti: €${(serata.incassoContanti ||
 - Contanti: €${(serata.incassoContanti || 0).toFixed(2)}
 - Spese pagate dalla cassa: €${(serata.speseCassa || 0).toFixed(2)}
 - INCASSO TOTALE LORDO: €${(serata.incassoTotale || 0).toFixed(2)}
@@ -1411,8 +1363,6 @@ ${dettagliSpese}
             const serata = serate.find(s => s.id === id);
             if (!serata) return;
             
-            // In una vera applicazione, qui useresti una libreria come jsPDF
-            // Per ora, creiamo un report testuale che può essere copiato
             let report = `
 REPORT SERATA - ${serata.nomeSerata}
 Data: ${formatDate(serata.data)}
@@ -1435,7 +1385,6 @@ COSTI:
 RISULTATO FINALE: €${(serata.risultato || 0).toFixed(2)}
             `;
             
-            // Crea un elemento temporaneo per il download
             const element = document.createElement('a');
             element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(report));
             element.setAttribute('download', `Serata_${serata.nomeSerata}_${serata.data}.txt`);
@@ -1447,7 +1396,6 @@ RISULTATO FINALE: €${(serata.risultato || 0).toFixed(2)}
             alert('Report scaricato! (In una versione completa sarebbe un PDF)');
         }
 
-        // Funzioni di export/import
         function esportaDati() {
             const datiEsport = {
                 serate: serate,
@@ -1483,7 +1431,6 @@ RISULTATO FINALE: €${(serata.risultato || 0).toFixed(2)}
                         if (confirm('Vuoi sostituire tutti i dati esistenti o aggiungerli a quelli attuali?\n\nOK = Sostituisci tutto\nAnnulla = Aggiungi ai dati esistenti')) {
                             serate = dati.serate;
                         } else {
-                            // Aggiungi evitando duplicati
                             dati.serate.forEach(nuovaSerata => {
                                 const esiste = serate.find(s => s.data === nuovaSerata.data && s.nomeSerata === nuovaSerata.nomeSerata);
                                 if (!esiste) {
@@ -1506,10 +1453,9 @@ RISULTATO FINALE: €${(serata.risultato || 0).toFixed(2)}
                 }
             };
             reader.readAsText(file);
-        } 
-// Inizializza i grafici
+        }
+
         function initCharts() {
-            // Grafico a torta per incassi
             const ctxPie = document.getElementById('pieChart');
             if (ctxPie) {
                 const ctxPieContext = ctxPie.getContext('2d');
@@ -1543,7 +1489,6 @@ RISULTATO FINALE: €${(serata.risultato || 0).toFixed(2)}
                 });
             }
             
-            // Inizializza il grafico a barre (verrà aggiornato in aggiornaRiepilogo)
             const ctxBar = document.getElementById('barChart');
             if (ctxBar) {
                 const ctxBarContext = ctxBar.getContext('2d');
@@ -1585,7 +1530,6 @@ RISULTATO FINALE: €${(serata.risultato || 0).toFixed(2)}
             }
         }
 
-        // Funzioni di utilità
         function formatDate(dateString) {
             const date = new Date(dateString + 'T00:00:00');
             return date.toLocaleDateString('it-IT', { 
